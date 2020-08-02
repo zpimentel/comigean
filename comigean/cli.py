@@ -54,10 +54,6 @@ if __name__ == '__main__':
         if args["--REF_TAXA"] is None and args["--OUTGROUP_TAXA"] is None and args["--USER_GENOMES"] is None:
             raise Exception("Must provide at least one of the following: --USER_GENOMES, --REF_TAXA, or --OUTGROUP_TAXA.")
 
-        if args["--outgroup_list"]:
-            if not args["--OUTGROUP_TAXA"]:
-                raise Exception("Optional argument --outgroup_list is called, but an outgroup (--OUTGROUP_TAXA) was not specified.")
-
         comigean.dwnld_genomes.get_genomes(args["--REF_TAXA"],
                                               args["--OUTGROUP_TAXA"],
                                               args["--USER_GENOMES"],
