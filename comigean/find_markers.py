@@ -23,7 +23,7 @@ def maketree(concat_aln, outdir):
 def rename_tree(outdir, ref_dir):
 
     name_dict = {}
-    assembly_file = ref_dir + "/" + "assembly_summary_refseq.txt"
+    assembly_file = os.path.join(ref_dir, "assembly_summary_refseq.txt")
     with open(assembly_file) as assem:
         next(assem)
         next(assem)
@@ -37,18 +37,21 @@ def rename_tree(outdir, ref_dir):
             full_name = full_name.replace(" ", "_")
             name_dict[full_name] = species_name + " " + strain_info
 
-    tree_file = outdir + "/" + "Concat.tre"
+    tree_file = os.path.join(outdir, "Concat.tre")
     tree = Phylo.read(tree_file, 'newick')
     for node in tree.find_clades():
         if node.name:
             node.name = "_".join(str(node.name).split("_")[:-1])
-            node.name = name_dict[node.name]
+            try:
+                node.name = name_dict[node.name]
+            except:
+                print(f"Unable to rename {node.name}")
             node.name = node.name.replace(',', '').replace(';', ''). \
             replace(":", "").replace("(", " ").replace(")", " "). \
             replace("/", "").replace("_", " ").replace("[", "").replace("]", ""). \
             replace("'", "").replace("  ", "")
 
-    Phylo.write(tree, outdir + "/" + "Concat_Renamed.tre", "newick")
+    Phylo.write(tree, os.path.join(outdir ,"Concat_Renamed.tre"), "newick")
 
 def concatenate(outdir):
     genomes = []
@@ -90,7 +93,7 @@ def align(outdir, hmm_count):
         if hmm_count[hmm] > 0.9:
             basename = os.path.splitext(hmm)[0]
             print(f'Running muscle on {basename}')
-            run_muscle = subprocess.run([f'muscle -in {outdir + "/" + basename + ".fa"} -out {outdir + "/" + basename + ".aln"}'], shell=True,
+            run_muscle = subprocess.run([f'muscle -in {os.path.join(outdir, basename + ".fa")} -out {os.path.join(outdir, basename + ".aln")}'], shell=True,
                                stdout=log_file, stderr=subprocess.STDOUT)
     log_file.close()
 
@@ -101,12 +104,12 @@ def get_sequences(prot_dir, protein2hit, outdir, hmm_hits):
 
     proteome_count = 0
     for dir in dirs:
-        if os.path.exists(prot_dir + "/" + dir):
-            for filename in os.listdir(prot_dir + "/" + dir):
+        if os.path.exists(os.path.join(prot_dir, dir)):
+            for filename in os.listdir(os.path.join(prot_dir, dir)):
                 if filename.endswith(".faa"):
                     proteome_count += 1
                     basename = os.path.splitext(filename)[0]
-                    with open(prot_dir + "/" + dir + "/" + filename, "rU") as handle:
+                    with open(os.path.join(prot_dir, dir, filename), "rU") as handle:
                         for record in SeqIO.parse(handle, "fasta"):
                             try:
                                 hmm = protein2hit[(record.id, basename)]
@@ -168,16 +171,16 @@ def run_hmmer(prot_dir, ref_dir):
     dirs = ['reference', 'outgroup', 'user']
     log_file = open("logfile", 'a')
 
-    outdir = str(Path(prot_dir).parents[0]) + "/" + "hmm_out"
+    outdir = os.path.join(str(Path(prot_dir).parents[0]), "hmm_out")
     os.makedirs(outdir)
 
     for dir in dirs:
-        if os.path.exists(prot_dir + "/" + dir):
-            for filename in os.listdir(prot_dir + "/" + dir):
+        if os.path.exists(os.path.join(prot_dir, dir)):
+            for filename in os.listdir(os.path.join(prot_dir, dir)):
                 if filename.endswith(".faa"):
                     basename = os.path.splitext(filename)[0]
-                    print(f'Running HMMER on {prot_dir + "/" + dir + "/" + filename}')
-                    run_hmmer = subprocess.run([f'hmmscan --domtblout {outdir}/{basename}.tsv {ref_dir}/Bacteria.hmm {prot_dir + "/" + dir + "/" + filename}'], shell=True,
+                    print(f'Running HMMER on {os.path.join(prot_dir, dir, filename)}')
+                    run_hmmer = subprocess.run([f'hmmscan --domtblout {outdir}/{basename}.tsv {ref_dir}/Bacteria.hmm {os.path.join(prot_dir, dir, filename)}'], shell=True,
                                stdout=log_file, stderr=subprocess.STDOUT)
 
     log_file.close()

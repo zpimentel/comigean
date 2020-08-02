@@ -25,14 +25,9 @@ import comigean.get_taxa_db
 import comigean.find_markers
 import comigean.profile_genomes
 
-# allow user to give list of genome accessions
-# allow prediction with prodigal
-
-# update git
-# use os.path.join more and less of path+file
+# allow prediction with prodigal for refseq genomes
 # At every single input - what happens if wrong input?????
 # exceptions
-
 
 if __name__ == '__main__':
     args = docopt(__doc__,
@@ -52,8 +47,8 @@ if __name__ == '__main__':
         if not os.path.exists(args["<OUTDIR>"]) and not args["--count"]:
             os.makedirs(args["<OUTDIR>"])
 
-        if args["<OUTDIR>"].endswith("/"):
-            args["<OUTDIR>"] = args["<OUTDIR>"].rstrip("/")
+        # if args["<OUTDIR>"].endswith("/"):
+        #     args["<OUTDIR>"] = args["<OUTDIR>"].rstrip("/")
 
         if not os.path.exists(args["<REF_DIR>"]):
             raise Exception(f'{args["<REF_DIR>"]} does not contain the required databases. Did you run the install-db command?')
@@ -86,8 +81,8 @@ if __name__ == '__main__':
         import comigean.commands.install_db_command
         args = docopt(comigean.commands.install_db_command.__doc__, argv=argv)
 
-        if args["<DIR>"].endswith("/"):
-            args["<DIR>"] = args["<DIR>"].rstrip("/")
+        # if args["<DIR>"].endswith("/"):
+        #     args["<DIR>"] = args["<DIR>"].rstrip("/")
 
         if not os.path.exists(args["<DIR>"]):
             os.makedirs(args["<DIR>"])
@@ -108,11 +103,11 @@ if __name__ == '__main__':
         if not os.path.exists(args["<REF_DIR>"]):
             raise Exception(f'{args["<REF_DIR>"]} does not exist.')
 
-        if args["<PROTEOME_DIR>"].endswith("/"):
-            args["<PROTEOME_DIR>"] = args["<PROTEOME_DIR>"].rstrip("/")
+        # if args["<PROTEOME_DIR>"].endswith("/"):
+        #     args["<PROTEOME_DIR>"] = args["<PROTEOME_DIR>"].rstrip("/")
 
-        if args["<REF_DIR>"].endswith("/"):
-            args["<REF_DIR>"] = args["<REF_DIR>"].rstrip("/")
+        # if args["<REF_DIR>"].endswith("/"):
+        #     args["<REF_DIR>"] = args["<REF_DIR>"].rstrip("/")
 
         comigean.find_markers.phylogenomics(args["<PROTEOME_DIR>"], args["<REF_DIR>"])
 

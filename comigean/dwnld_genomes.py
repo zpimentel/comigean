@@ -204,17 +204,17 @@ class GetGenomesClass:
                             sys.stdout.flush()
                             sys.stdout.write(f"\rDownloading {self.group} genome & proteome {genome_data[0]}")
 
-                            proteome_url = genome_data[1] + "/" + genome_data[0] + "_" + genome_data[3] + "_protein.faa.gz"
-                            genome_url = genome_data[1] + "/" + genome_data[0] + "_" + genome_data[3] + "_genomic.fna.gz"
+                            proteome_url = os.path.join(genome_data[1], genome_data[0] + "_" + genome_data[3] + "_protein.faa.gz")
+                            genome_url = os.path.join(genome_data[1], genome_data[0] + "_" + genome_data[3] + "_genomic.fna.gz")
 
                             genome_url = genome_url.replace(" ", "_")
                             proteome_url = proteome_url.replace(" ", "_")
 
                             proteome_out = wget.download(proteome_url, out=protdir, bar=None)
-                            subprocess.run([f"gunzip {protdir + proteome_url.split('/')[-1]}"], shell=True)
+                            subprocess.run([f"gunzip {os.path.join(protdir, proteome_url.split('/')[-1])}"], shell=True)
 
                             genome_out = wget.download(genome_url, out=genomedir, bar=None)
-                            subprocess.run([f"gunzip {genomedir + genome_url.split('/')[-1]}"], shell=True)
+                            subprocess.run([f"gunzip {os.path.join(genomedir, genome_url.split('/')[-1])}"], shell=True)
 
                 except:
                     print(f"Download of {genome_data[0]} failed.")
@@ -229,7 +229,7 @@ class GetGenomesClass:
     def call_genes(self, dir, genome_path, code):
         """ Call genes using prodigal. """
 
-        outdir = dir + self.group
+        outdir = os.path.join(dir, self.group)
         if not os.path.exists(outdir):
             os.makedirs(outdir)
 
@@ -243,17 +243,17 @@ class GetGenomesClass:
                 if filename.endswith(".fna"):
                     basename_fna = filename
                     basename = os.path.splitext(basename_fna)[0]
-                    print(f"Calling genes for {genome_path + basename_fna}")
-                    gene_call = subprocess.run([f'prodigal -i {genome_path + basename_fna} -a {outdir + "/" + basename + ".faa"} -g {code}'], shell=True,
+                    print(f"Calling genes for {os.path.join(genome_path, basename_fna)}")
+                    gene_call = subprocess.run([f'prodigal -i {os.path.join(genome_path, basename_fna)} -a {os.path.join(outdir, basename + ".faa")} -g {code}'], shell=True,
                                stdout=log_file, stderr=subprocess.STDOUT)
             else:
                 if filename.endswith(".gz"):
                     basename_fna = os.path.splitext(filename)[0]
                     basename = os.path.splitext(basename_fna)[0]
 
-                    subprocess.run([f"gunzip {genome_path + filename}"], shell=True)
-                    print(f"Calling genes for {genome_path + basename_fna}")
-                    gene_call = subprocess.run([f'prodigal -i {genome_path + basename_fna} -a {outdir + "/" + basename + ".faa"} -g {code}'], shell=True,
+                    subprocess.run([f"gunzip {os.path.join(genome_path, filename)}"], shell=True)
+                    print(f"Calling genes for {os.path.join(genome_path, basename_fna)}")
+                    gene_call = subprocess.run([f'prodigal -i {os.path.join(genome_path, basename_fna)} -a {os.path.join(outdir, basename + ".faa")} -g {code}'], shell=True,
                                stdout=log_file, stderr=subprocess.STDOUT)
 
         log_file.close()

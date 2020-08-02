@@ -1,2 +1,5 @@
-# Microbial_Genome_Analysis_Suite
-Set of scripts and tools for microbial genome analysis.
+# Example Package
+
+This is a simple example package. You can use
+[Github-flavored Markdown](https://guides.github.com/features/mastering-markdown/)
+to write your content.

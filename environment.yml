@@ -1,0 +1,8 @@
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - orthofinder
+  - snakemake
+  - prodigal
+  - ncbi-genome-download
