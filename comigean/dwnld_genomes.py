@@ -18,7 +18,6 @@ def get_children(children, node_dict, child_list):
     Recursive function that finds all species level taxa id's from a given
     taxa id.
     """
-
     for child in children:
         if child[1] != 'species':
             new_child = node_dict[child[0]]
@@ -31,7 +30,6 @@ def get_children(children, node_dict, child_list):
 
 def parse_refseq(assembly_file):
     """ Get url of genomes to download. """
-    # there can be many genomes associated with one taxa id
     url_dict = defaultdict(list)
 
     with open(assembly_file) as assem:
@@ -53,7 +51,6 @@ def parse_refseq(assembly_file):
 
 def parse_names(names_handle):
     """ Get names associated with each taxa id. """
-
     name_dict = {}
 
     names_file = open(names_handle)
@@ -68,9 +65,34 @@ def parse_names(names_handle):
     return(name_dict)
 
 
+def set_default(options, default, argument, track):
+    """ Set default when argument is not provided. """
+    if argument:
+        if argument == "all":
+            option_list = options
+        else:
+            option_list = []
+            if track == 1:
+                for cat in argument.split(","):
+                    if cat == "Complete_Genome":
+                        cat = "Complete Genome"
+                    if cat not in options:
+                        raise Exception(f"Option {cat} is not a valid option for --assembly_level")
+                    option_list.append(cat)
+            if track == 2:
+                for cat in argument.split(","):
+                    cat = cat + " genome"
+                    if cat not in options:
+                        raise Exception(f"Option {cat} is not a valid option for --refseq_category")
+                    option_list.append(cat)
+    else:
+        option_list = default
+
+    return(option_list)
+
+
 def parse_nodes(node_handle):
     """ Find child of each parent node. """
-
     node_dict = defaultdict(list)
 
     nodes_file = open(node_handle)
@@ -82,22 +104,6 @@ def parse_nodes(node_handle):
         node_dict[parent].append((child, tax_level))
 
     return(node_dict)
-
-
-def set_defaults(param, param_list, default):
-    """
-    Set default parameters for ncbi-genome-download if None or do not match
-    list of arguments.
-    """
-
-    if param:
-        if param not in param_list:
-            param = default
-            print(f'({param} was incorrectly specified thus the default {default} was applied.)')
-    else:
-        param = default
-
-    return(param)
 
 
 class GetGenomesClass:
@@ -112,7 +118,6 @@ class GetGenomesClass:
 
     def get_lineage(self, name_dict, node_dict):
         """ Get all species level taxa ids from parent taxa id. """
-
         child_list = []
 
         child = node_dict[self.taxa_id]
@@ -125,29 +130,8 @@ class GetGenomesClass:
 
     def count_genomes(self, taxa_ids, url_dict, refseq_category, assembly_level):
         """ Count the genomes to be downloaded. """
-        if refseq_category:
-            if refseq_category == "all":
-                refseq_list = ["reference genome", "representative genome", "na"]
-            else:
-                refseq_list = []
-                for cat in refseq_category.split(","):
-                    refseq_list.append(cat + " genome")
-        else:
-            refseq_list = ["reference genome", "representative genome", "na"]
-
-        if assembly_level:
-            if assembly_level == "all":
-                assem_list = ["Chromosome", "Complete Genome", "Scaffold", "Contig"]
-            else:
-                assem_list = []
-                for cat in assembly_level.split(","):
-                    if cat == "Complete_Genome":
-                        cat = "Complete Genome"
-                    assem_list.append(cat)
-        else:
-            assem_list = ["Complete Genome"]
-
-        #assembly_level = [assem.replace("Complete_Genome", "Complete Genome") for assem in assembly_level]
+        refseq_list = set_default(["reference genome", "representative genome", "na"], ["reference genome", "representative genome", "na"], refseq_category, 2)
+        assem_list = set_default(["Chromosome", "Complete Genome", "Scaffold", "Contig"], ["Complete Genome"], assembly_level, 1)
 
         count = 0
         for id in taxa_ids:
@@ -159,9 +143,8 @@ class GetGenomesClass:
         return(count)
 
 
-    def download_proteomes(self, dir, taxa_ids, url_dict, refseq_category, assembly_level):
-        """ Download proteomes. """
-
+    def download_sequences(self, dir, taxa_ids, url_dict, refseq_category, assembly_level):
+        """ Download genomes & proteomes. """
         protdir = f"{dir}/proteomes/{self.group}/"
         if not os.path.exists(protdir):
             os.makedirs(protdir)
@@ -170,29 +153,8 @@ class GetGenomesClass:
         if not os.path.exists(genomedir):
             os.makedirs(genomedir)
 
-        if refseq_category:
-            if refseq_category == "all":
-                refseq_list = ["reference genome", "representative genome", "na"]
-            else:
-                refseq_list = []
-                for cat in refseq_category.split(","):
-                    refseq_list.append(cat + " genome")
-        else:
-            refseq_list = ["reference genome", "representative genome", "na"]
-
-        if assembly_level:
-            if assembly_level == "all":
-                assem_list = ["Chromosome", "Complete Genome", "Scaffold", "Contig"]
-            else:
-                assem_list = []
-                for cat in assembly_level.split(","):
-                    if cat == "Complete_Genome":
-                        cat = "Complete Genome"
-                    assem_list.append(cat)
-        else:
-            assem_list = ["Complete Genome"]
-
-    #    assembly_level = [assem.replace("Complete_Genome", "Complete Genome") for assem in assembly_level]
+        refseq_list = set_default(["reference genome", "representative genome", "na"], ["reference genome", "representative genome", "na"], refseq_category, 2)
+        assem_list = set_default(["Chromosome", "Complete Genome", "Scaffold", "Contig"], ["Complete Genome"], assembly_level, 1)
 
         count = 0
         for id in taxa_ids:
@@ -215,13 +177,12 @@ class GetGenomesClass:
 
                             genome_out = wget.download(genome_url, out=genomedir, bar=None)
                             subprocess.run([f"gunzip {os.path.join(genomedir, genome_url.split('/')[-1])}"], shell=True)
-
                 except:
                     print(f"Download of {genome_data[0]} failed.")
 
         list = os.listdir(protdir)
         if len(list) == 0:
-            raise Exception("Nothing was downloaded. Did you provide a valid NCBI Taxonomy ID?")
+            raise Exception("While a valid NCBI taxonomy ID was provided, no genomes or proteomes were downloaded. Do you have a stable interent connection?")
 
         return(protdir)
 
@@ -280,11 +241,14 @@ def get_genomes(ref_parent, out_parent, user_genomes, dir, dbdir, count, refseq_
 
             ref_ids = ref.get_lineage(name_dict, node_dict)
 
+            ref_count = ref.count_genomes(ref_ids, url_dict, refseq_category, assembly_level)
+
             if count:
-                ref_count = ref.count_genomes(ref_ids, url_dict, refseq_category, assembly_level)
                 print(f"Number of reference genomes from {ref_taxa_id} to be downloaded: {ref_count}")
             else:
-                ref_genomes = ref.download_proteomes(dir, ref_ids, url_dict, refseq_category, assembly_level)
+                if ref_count == 0:
+                    raise Exception(f"This taxa ID ({ref_parent}) and options selected for --refseq_category and --assembly_level has resulted in no genomes being downloaded.")
+                ref_genomes = ref.download_sequences(dir, ref_ids, url_dict, refseq_category, assembly_level)
 
     if out_parent:
         for out_taxa_id in out_parent.split(","):
@@ -292,11 +256,14 @@ def get_genomes(ref_parent, out_parent, user_genomes, dir, dbdir, count, refseq_
 
             out_ids = out.get_lineage(name_dict, node_dict)
 
+            out_count = out.count_genomes(out_ids, url_dict, refseq_category, assembly_level)
+
             if count:
-                out_count = out.count_genomes(out_ids, url_dict, refseq_category, assembly_level)
                 print(f"Number of outgroup genomes from {out_taxa_id} to be downloaded: {out_count}")
             else:
-                out_genomes = out.download_proteomes(dir, out_ids, url_dict, refseq_category, assembly_level)
+                if out_count == 0:
+                    raise Exception(f"This taxa ID ({out_parent}) and options selected for --refseq_category and --assembly_level has resulted in no genomes being downloaded.")
+                out_genomes = out.download_sequences(dir, out_ids, url_dict, refseq_category, assembly_level)
 
     if not count:
         sys.stdout.write("\n")
