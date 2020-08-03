@@ -72,23 +72,24 @@ def set_default(options, default, argument, track):
             option_list = options
         else:
             option_list = []
-            if track == 1:
-                for cat in argument.split(","):
-                    if cat == "Complete_Genome":
-                        cat = "Complete Genome"
-                    if cat not in options:
-                        raise Exception(f"Option {cat} is not a valid option for --assembly_level")
-                    option_list.append(cat)
-            if track == 2:
-                for cat in argument.split(","):
+            for cat in argument.split(","):
+                if cat == "Complete_Genome":
+                    cat = "Complete Genome"
+                if track == 2:
                     cat = cat + " genome"
-                    if cat not in options:
-                        raise Exception(f"Option {cat} is not a valid option for --refseq_category")
-                    option_list.append(cat)
+                if cat not in options:
+                    raise Exception(f"{cat} is not a valid option.")
+                option_list.append(cat)
     else:
         option_list = default
 
     return(option_list)
+
+
+def mkdir_if_nonexistant(dir):
+    """ Makes directory if it does not exist. """
+    if not os.path.exists(dir):
+        os.makedirs(dir)
 
 
 def parse_nodes(node_handle):
@@ -104,6 +105,24 @@ def parse_nodes(node_handle):
         node_dict[parent].append((child, tax_level))
 
     return(node_dict)
+
+
+def count_genomes(taxa_ids, url_dict, refseq_category, assembly_level):
+    """ Count the genomes to be downloaded. """
+    refseq_list = set_default(["reference genome", "representative genome", "na"],
+                              ["reference genome", "representative genome", "na"],
+                              refseq_category, 2)
+    assem_list = set_default(["Chromosome", "Complete Genome", "Scaffold", "Contig"],
+                             ["Complete Genome"], assembly_level, 1)
+
+    count = 0
+    for id in taxa_ids:
+        for genome_data in url_dict[id]:
+            if genome_data[2] in assem_list:
+                if genome_data[4] in refseq_list:
+                    count += 1
+
+    return(count)
 
 
 class GetGenomesClass:
@@ -127,34 +146,19 @@ class GetGenomesClass:
 
         return(child_list)
 
-
-    def count_genomes(self, taxa_ids, url_dict, refseq_category, assembly_level):
-        """ Count the genomes to be downloaded. """
-        refseq_list = set_default(["reference genome", "representative genome", "na"], ["reference genome", "representative genome", "na"], refseq_category, 2)
-        assem_list = set_default(["Chromosome", "Complete Genome", "Scaffold", "Contig"], ["Complete Genome"], assembly_level, 1)
-
-        count = 0
-        for id in taxa_ids:
-            for genome_data in url_dict[id]:
-                if genome_data[2] in assem_list:
-                    if genome_data[4] in refseq_list:
-                        count += 1
-
-        return(count)
-
-
     def download_sequences(self, dir, taxa_ids, url_dict, refseq_category, assembly_level):
-        """ Download genomes & proteomes. """
+        """ Download genomes & proteomes from NCBI RefSeq ftp. """
         protdir = f"{dir}/proteomes/{self.group}/"
-        if not os.path.exists(protdir):
-            os.makedirs(protdir)
+        mkdir_if_nonexistant(protdir)
 
         genomedir = f"{dir}/genomes/{self.group}/"
-        if not os.path.exists(genomedir):
-            os.makedirs(genomedir)
+        mkdir_if_nonexistant(genomedir)
 
-        refseq_list = set_default(["reference genome", "representative genome", "na"], ["reference genome", "representative genome", "na"], refseq_category, 2)
-        assem_list = set_default(["Chromosome", "Complete Genome", "Scaffold", "Contig"], ["Complete Genome"], assembly_level, 1)
+        refseq_list = set_default(["reference genome", "representative genome", "na"],
+                                  ["reference genome", "representative genome", "na"],
+                                  refseq_category, 2)
+        assem_list = set_default(["Chromosome", "Complete Genome", "Scaffold", "Contig"],
+                                 ["Complete Genome"], assembly_level, 1)
 
         count = 0
         for id in taxa_ids:
@@ -166,11 +170,8 @@ class GetGenomesClass:
                             sys.stdout.flush()
                             sys.stdout.write(f"\rDownloading {self.group} genome & proteome {genome_data[0]}")
 
-                            proteome_url = os.path.join(genome_data[1], genome_data[0] + "_" + genome_data[3] + "_protein.faa.gz")
-                            genome_url = os.path.join(genome_data[1], genome_data[0] + "_" + genome_data[3] + "_genomic.fna.gz")
-
-                            genome_url = genome_url.replace(" ", "_")
-                            proteome_url = proteome_url.replace(" ", "_")
+                            proteome_url = os.path.join(genome_data[1], genome_data[0] + "_" + genome_data[3] + "_protein.faa.gz").replace(" ", "_")
+                            genome_url = os.path.join(genome_data[1], genome_data[0] + "_" + genome_data[3] + "_genomic.fna.gz").replace(" ", "_")
 
                             proteome_out = wget.download(proteome_url, out=protdir, bar=None)
                             subprocess.run([f"gunzip {os.path.join(protdir, proteome_url.split('/')[-1])}"], shell=True)
@@ -189,12 +190,13 @@ class GetGenomesClass:
 
     def call_genes(self, dir, genome_path, code):
         """ Call genes using prodigal. """
-
         outdir = os.path.join(dir, self.group)
-        if not os.path.exists(outdir):
-            os.makedirs(outdir)
+        mkdir_if_nonexistant(outdir)
 
-        if not code:
+        if code:
+            if str(code) not in ["{:01}".format(n) for n in range(1,34)]:
+                raise Exception(f"{code} is not a valid genetic code.")
+        else:
             code = 11
 
         print(f"Calling genes for {self.group} genomes:")
@@ -204,18 +206,14 @@ class GetGenomesClass:
                 if filename.endswith(".fna"):
                     basename_fna = filename
                     basename = os.path.splitext(basename_fna)[0]
-                    print(f"Calling genes for {os.path.join(genome_path, basename_fna)}")
-                    gene_call = subprocess.run([f'prodigal -i {os.path.join(genome_path, basename_fna)} -a {os.path.join(outdir, basename + ".faa")} -g {code}'], shell=True,
-                               stdout=log_file, stderr=subprocess.STDOUT)
-            else:
-                if filename.endswith(".gz"):
+                else:
                     basename_fna = os.path.splitext(filename)[0]
                     basename = os.path.splitext(basename_fna)[0]
-
                     subprocess.run([f"gunzip {os.path.join(genome_path, filename)}"], shell=True)
-                    print(f"Calling genes for {os.path.join(genome_path, basename_fna)}")
-                    gene_call = subprocess.run([f'prodigal -i {os.path.join(genome_path, basename_fna)} -a {os.path.join(outdir, basename + ".faa")} -g {code}'], shell=True,
-                               stdout=log_file, stderr=subprocess.STDOUT)
+
+                print(f"Calling genes for {os.path.join(genome_path, basename_fna)}")
+                gene_call = subprocess.run([f'prodigal -i {os.path.join(genome_path, basename_fna)} -a {os.path.join(outdir, basename + ".faa")} -g {code}'], shell=True,
+                           stdout=log_file, stderr=subprocess.STDOUT)
 
         log_file.close()
 
@@ -227,8 +225,7 @@ def get_genomes(ref_parent, out_parent, user_genomes, dir, dbdir, count, refseq_
     for all of the downloaded genomes.
     """
     prot_dir = f"{dir}/proteomes/"
-    if not os.path.exists(prot_dir):
-        os.makedirs(prot_dir)
+    mkdir_if_nonexistant(prot_dir)
 
     if ref_parent or out_parent:
         name_dict = parse_names(f"{dbdir}/names.dmp")
@@ -241,7 +238,7 @@ def get_genomes(ref_parent, out_parent, user_genomes, dir, dbdir, count, refseq_
 
             ref_ids = ref.get_lineage(name_dict, node_dict)
 
-            ref_count = ref.count_genomes(ref_ids, url_dict, refseq_category, assembly_level)
+            ref_count = count_genomes(ref_ids, url_dict, refseq_category, assembly_level)
 
             if count:
                 print(f"Number of reference genomes from {ref_taxa_id} to be downloaded: {ref_count}")
@@ -256,7 +253,7 @@ def get_genomes(ref_parent, out_parent, user_genomes, dir, dbdir, count, refseq_
 
             out_ids = out.get_lineage(name_dict, node_dict)
 
-            out_count = out.count_genomes(out_ids, url_dict, refseq_category, assembly_level)
+            out_count = count_genomes(out_ids, url_dict, refseq_category, assembly_level)
 
             if count:
                 print(f"Number of outgroup genomes from {out_taxa_id} to be downloaded: {out_count}")
@@ -270,5 +267,4 @@ def get_genomes(ref_parent, out_parent, user_genomes, dir, dbdir, count, refseq_
 
     if user_genomes:
         user = GetGenomesClass(None, "user")
-
         user.call_genes(prot_dir, user_genomes, code)

@@ -25,10 +25,6 @@ import comigean.get_taxa_db
 import comigean.find_markers
 import comigean.profile_genomes
 
-# allow prediction with prodigal for refseq genomes
-# allow user to specify a refseq genome accession id (and a list of them)
-# At every single input - what happens if wrong input?????
-# exceptions
 
 if __name__ == '__main__':
     args = docopt(__doc__,
