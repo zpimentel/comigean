@@ -208,6 +208,10 @@ class GetGenomesClass:
 
 def run_group(parent, group_name, name_dict, node_dict, url_dict, rs_list,
               assem_list, count, dir):
+    """
+    Call functions and classes necessary to get all genomes within
+    a particular taxa (defined by the taxonomic id).
+    """
     for taxa_id in parent.split(","):
         group = GetGenomesClass(taxa_id, group_name)
 
@@ -229,10 +233,7 @@ def run_group(parent, group_name, name_dict, node_dict, url_dict, rs_list,
 
 def get_genomes(ref_parent, out_parent, user_genomes, dir, dbdir, count,
                 refseq_category, assembly_level, code):
-    """
-    Call functions and classes necessary to get all genomes within
-    a particular taxa (defined by the taxonomic id).
-    """
+    """ Prepare for genome download and gene calling. """
     prot_dir = f"{dir}/proteomes/"
     mkdir_if_nonexistant(prot_dir)
 
