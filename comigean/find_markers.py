@@ -90,7 +90,7 @@ def concatenate(outdir):
 def align(outdir, hmm_count):
     log_file = open("logfile", 'a')
     for hmm in hmm_count:
-        if hmm_count[hmm] > 0.9:
+        if hmm_count[hmm] > 0.99:
             basename = os.path.splitext(hmm)[0]
             print(f'Running muscle on {basename}')
             run_muscle = subprocess.run([f'muscle -in {os.path.join(outdir, basename + ".fa")} -out {os.path.join(outdir, basename + ".aln")}'], shell=True,
@@ -189,6 +189,7 @@ def run_hmmer(prot_dir, ref_dir):
 
 
 def phylogenomics(prot_dir, ref_dir):
+    # switch this to outdir not protdir
     outdir = run_hmmer(prot_dir, ref_dir)
 
     hmm_hits, protein2hit = parse_hmms(outdir)

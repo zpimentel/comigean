@@ -244,8 +244,6 @@ def get_genomes(ref_parent, out_parent, user_genomes, dir, dbdir, count,
     assem_list = set_default(assem_opt, ["Complete Genome"], assembly_level, 1)
 
     if ref_parent or out_parent:
-        if os.path.exists(dir):
-            raise Exception(f"{dir} already exists.")
 
         name_dict = parse_names(f"{dbdir}/names.dmp")
         node_dict = parse_nodes(f"{dbdir}/nodes.dmp")
