@@ -1,8 +1,15 @@
+name: comigean
 channels:
   - bioconda
   - conda-forge
 dependencies:
-  - orthofinder
-  - snakemake
+  - python=3.6
+  - hmmer
   - prodigal
-  - ncbi-genome-download
+  - biopython
+  - muscle
+  - fasttree
+  - pip:
+    - wget
+    - docopt
+
