@@ -244,7 +244,6 @@ def get_genomes(ref_parent, out_parent, user_genomes, dir, dbdir, count,
     assem_list = set_default(assem_opt, ["Complete Genome"], assembly_level, 1)
 
     if ref_parent or out_parent:
-
         name_dict = parse_names(f"{dbdir}/names.dmp")
         node_dict = parse_nodes(f"{dbdir}/nodes.dmp")
         url_dict = parse_refseq(f"{dbdir}/assembly_summary_refseq.txt")
