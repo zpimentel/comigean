@@ -20,20 +20,18 @@ import os
 from docopt import docopt
 from subprocess import call
 
-from . import dwnld_genomes
-from . import get_taxa_db
-from . import find_markers
-from . import profile_genomes
-
-if __name__ == '__main__':
+#if __name__ == '__main__':
+def commands_entry():
     args = docopt(__doc__,
                   version='comigean Beta',
                   options_first=True)
     argv = [args['<command>']] + args['<args>']
 
     if args['<command>'] == 'get-genomes':
-        import comigean.commands.getgenomes_command
-        args = docopt(comigean.commands.getgenomes_command.__doc__,
+        import comigean.dwnld_genomes
+        import comigean.getgenomes_command
+
+        args = docopt(comigean.getgenomes_command.__doc__,
                       argv=argv)
 
         if args["--USER_GENOMES"]:
@@ -60,15 +58,19 @@ if __name__ == '__main__':
                                               args["--code"])
 
     elif args['<command>'] == 'genome-stats':
-        import comigean.commands.profile_command
-        args = docopt(comigean.commands.profile_command.__doc__,
+        import comigean.get_taxa_db
+        import comigean.profile_command
+
+        args = docopt(comigean.profile_command.__doc__,
                       argv=argv)
 
         comigean.profile_genomes.profile(args["<REF_DIR>"], args["<OUTDIR>"])
 
     elif args['<command>'] == 'install-db':
-        import comigean.commands.install_db_command
-        args = docopt(comigean.commands.install_db_command.__doc__, argv=argv)
+        import comigean.get_taxa_db
+        import comigean.install_db_command
+
+        args = docopt(comigean.install_db_command.__doc__, argv=argv)
 
         if not os.path.exists(args["<DIR>"]):
             os.makedirs(args["<DIR>"])
@@ -80,8 +82,10 @@ if __name__ == '__main__':
         comigean.get_taxa_db.get_db(args["<DIR>"])
 
     elif args['<command>'] == 'find-markers':
-        import comigean.commands.hmm_command
-        args = docopt(comigean.commands.hmm_command.__doc__, argv=argv)
+        import comigean.find_markers
+        import comigean.hmm_command
+
+        args = docopt(comigean.hmm_command.__doc__, argv=argv)
 
         if not os.path.exists(args["<PROTEOME_DIR>"]):
             raise Exception(f'{args["<PROTEOME_DIR>"]} does not exist.')

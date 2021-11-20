@@ -1,4 +1,6 @@
 from setuptools import setup, find_packages
+import pkg_resources
+
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -12,8 +14,9 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     #url="",
-    packages = find_packages(),
-    entry_points = {'console_scripts': ['comigean = comigean.cli:main']},
+    packages=['comigean',],
+    #packages = find_packages(),
+    entry_points = {'console_scripts': ['comigean = comigean.cli:commands_entry']},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
