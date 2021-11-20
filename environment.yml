@@ -4,6 +4,7 @@ channels:
   - conda-forge
 dependencies:
   - python=3.6
+  - pip
   - hmmer
   - prodigal
   - biopython
@@ -12,4 +13,3 @@ dependencies:
   - pip:
     - wget
     - docopt
-

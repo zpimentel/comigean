@@ -150,24 +150,27 @@ class GetGenomesClass:
         for id in taxa_ids:
             for gen in url_dict[id]:
                 if gen[2] in assem_list and gen[4] in refseq_list:
-                    proturl = os.path.join(gen[1], gen[0] + "_" + gen[3] +
-                                           "_protein.faa.gz").replace(" ", "_")
+                    if gen[1] != 'na':
+                        proturl = os.path.join(gen[1], gen[0] + "_" + gen[3] +
+                                               "_protein.faa.gz").replace(" ", "_")
 
-                    gen_url = os.path.join(gen[1], gen[0] + "_" + gen[3] +
-                                           "_genomic.fna.gz").replace(" ", "_")
-                    try:
-                        proteome_out = wget.download(proturl, out=protdir,
-                                                     bar=None)
-                        genome_out = wget.download(gen_url, out=gendir,
-                                                   bar=None)
-                    except IOError:
-                        print(f"Download of {gen[0]} failed.")
+                        gen_url = os.path.join(gen[1], gen[0] + "_" + gen[3] +
+                                               "_genomic.fna.gz").replace(" ", "_")
+                        try:
+                            proteome_out = wget.download(proturl, out=protdir,
+                                                         bar=None)
+                            genome_out = wget.download(gen_url, out=gendir,
+                                                       bar=None)
+                        except IOError:
+                            print(f"Download of {gen[0]} failed.")
 
-                    prot_file = os.path.join(protdir, proturl.split('/')[-1])
-                    subprocess.run([f"gunzip {prot_file}"], shell=True)
+                        prot_file = os.path.join(protdir, proturl.split('/')[-1])
+                        subprocess.run([f"gunzip {prot_file}"], shell=True)
 
-                    gen_file = os.path.join(gendir, gen_url.split('/')[-1])
-                    subprocess.run([f"gunzip {gen_file}"], shell=True)
+                        gen_file = os.path.join(gendir, gen_url.split('/')[-1])
+                        subprocess.run([f"gunzip {gen_file}"], shell=True)
+                    else:
+                        print(f'Unable to download {gen[0]}. Incomplete data provided by RefSeq =(')
 
         if len(os.listdir(protdir)) == 0:
             raise Exception("While a valid NCBI taxonomy ID was provided, no \

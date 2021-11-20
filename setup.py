@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name="MicroContext",
+    name="comigean",
     version="0.0.38",
     author="Zachary T. Pimentel",
     author_email="zpimentel@uri.edu",
@@ -13,7 +13,7 @@ setup(
     long_description_content_type="text/markdown",
     #url="",
     packages = find_packages(),
-    entry_points = {'console_scripts': ['comoidean = comigean.cli:main']},
+    entry_points = {'console_scripts': ['comigean = comigean.cli:main']},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

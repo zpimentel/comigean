@@ -141,9 +141,9 @@ def parse_hmms(outdir):
             if row[0] == ' ':
                 continue
             row = row.strip().split(None, 22)
-            domain_name = row[0]
+            seq_id = row[0]
             pfam_accession = row[1]
-            seq_id = row[3]
+            domain_name = row[3]
             profile_length = float(row[2])
             query_length = float(row[5])
             evalue = float(row[12])  # i-evalue
@@ -180,7 +180,7 @@ def run_hmmer(prot_dir, ref_dir):
                 if filename.endswith(".faa"):
                     basename = os.path.splitext(filename)[0]
                     print(f'Running HMMER on {os.path.join(prot_dir, dir, filename)}')
-                    run_hmmer = subprocess.run([f'hmmscan --domtblout {outdir}/{basename}.tsv {ref_dir}/Bacteria.hmm {os.path.join(prot_dir, dir, filename)}'], shell=True,
+                    run_hmmer = subprocess.run([f'hmmsearch --domtblout {outdir}/{basename}.tsv {ref_dir}/Bacteria.hmm {os.path.join(prot_dir, dir, filename)}'], shell=True,
                                stdout=log_file, stderr=subprocess.STDOUT)
 
     log_file.close()

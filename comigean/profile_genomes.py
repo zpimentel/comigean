@@ -3,22 +3,24 @@ Author: Zachary Pimentel
 Institution: University of Rhode Island
 """
 
-# calculate genome size
-# calculate the number of CDS
 # coding density
 # ANI
 # AAI
-# gene presence/absence
 # full taxonomy
 
 import os
 import sys
+
 from Bio import SeqIO
+import pandas as pd
 
 
-def compute_genome_size(genome_dir):
+def genome_stats(genome_dir):
+    ''' Computes genome size and GC content  '''
     dirs = ['reference', 'outgroup', 'user']
-    genome_size_dict = {}
+    genome_stats_dict = {}
+    #gc_content_dict = {}
+    #contig_count_dict = {}
 
     for dir in dirs:
         if os.path.exists(genome_dir + "/" + dir):
@@ -26,15 +28,26 @@ def compute_genome_size(genome_dir):
                 if filename.endswith(".fna"):
                     basename = os.path.splitext(filename)[0]
                     genome_size = 0
+                    g_count = 0
+                    c_count = 0
+                    contig_count = 0
                     with open(genome_dir + "/" + dir + "/" + filename, "rU") as handle:
                         for record in SeqIO.parse(handle, "fasta"):
                             genome_size += len(record.seq)
-                    genome_size_dict[basename] = genome_size
+                            g_count += record.seq.count('G')
+                            c_count += record.seq.count('C')
+                            contig_count += 1
 
-    return(genome_size_dict)
+                    genome_size_str = str(round(genome_size/1000000, 3)) + " MB"
+                    gc_content = round(((g_count + c_count) / genome_size) * 100, 2)
+                    gc_content_string = str(gc_content) + "%"
+
+                    genome_stats_dict[basename] = (genome_size_str, contig_count, gc_content_string)
+
+    return(genome_stats_dict)
 
 
-def count_CDS(prot_dir):
+def proteome_stats(prot_dir):
     dirs = ['reference', 'outgroup', 'user']
     cds_count_dict = {}
 
@@ -51,51 +64,13 @@ def count_CDS(prot_dir):
 
     return(cds_count_dict)
 
-
-def make_barplot(ref_dir, feature_dict, db_dir, feature):
-    outdir = ref_dir + "/iTol_Viz"
-    if not os.path.exists(outdir):
-        os.makedirs(outdir)
-
-    bar_base_path = sys.path[0] + "/" + "base/" + "barchart_base.txt"
-    out_handle = outdir + f"/{feature}_Viz.txt"
-    out_file = open(out_handle, 'w')
-
-    with open(bar_base_path) as bar_file:
-        for row in bar_file:
-            if "label 1" in row:
-                row = row.replace("label 1", feature)
-            out_file.write(row)
-
-    name_dict = {}
-    assembly_file = db_dir + "/" + "assembly_summary_refseq.txt"
-    with open(assembly_file) as assem:
-        next(assem)
-        next(assem)
-        for row in assem:
-            row = row.strip().split("\t")
-            accession = row[0]
-            species_name = row[7]
-            strain_info = row[8]
-            assem_id = row[15]
-            full_name = accession + "_" + assem_id
-            strain_name = species_name + " " + strain_info
-            strain_name = strain_name.replace(" ", "_").replace(',', '').replace(';', ''). \
-            replace(":", "").replace("(", " ").replace(")", " "). \
-            replace("/", "").replace("_", " ").replace("[", "").replace("]", ""). \
-            replace("'", "").replace("  ", "")
-            name_dict[full_name] = strain_name
-
-    for genome in feature_dict:
-        genome_reduced = genome.replace("_protein", "").replace("_genomic", "")
-        out_file.write(f"'{name_dict[genome_reduced]}', {feature_dict[genome]}\n")
-
-
 def profile(db_dir, ref_dir):
     prot_dir = ref_dir + "/" + "proteomes"
     genome_dir = ref_dir + "/genomes"
-    cds_count_dict = count_CDS(prot_dir)
-    genome_size_dict = compute_genome_size(genome_dir)
+    cds_count_dict = proteome_stats(prot_dir)
+    genome_stats_dict = genome_stats(genome_dir)
 
-    make_barplot(ref_dir, cds_count_dict, db_dir, "CDS")
-    make_barplot(ref_dir, genome_size_dict, db_dir, "Genome_Size")
+    df = pd.DataFrame.from_dict(genome_stats_dict, orient='index')
+    df.columns = ['Genome Size', '# Contigs', 'GC Content']
+
+    print(df)

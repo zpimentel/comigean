@@ -20,11 +20,10 @@ import os
 from docopt import docopt
 from subprocess import call
 
-import comigean.dwnld_genomes
-import comigean.get_taxa_db
-import comigean.find_markers
-import comigean.profile_genomes
-
+from . import dwnld_genomes
+from . import get_taxa_db
+from . import find_markers
+from . import profile_genomes
 
 if __name__ == '__main__':
     args = docopt(__doc__,
