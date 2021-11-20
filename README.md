@@ -24,7 +24,10 @@ Required positional arguments include the name of an output directory to put the
 ```
 
 ### 3. Profile Genomes
-
+This command will produce basic statistics for each genome include genome size, number of contigs, and GC content. This data will be printed to standard out as a table.
+```
+>$ comigean genome-stats <OUTDIR> <REF_DIR>
+```
 
 ### 4. Perform a Phylogenomic Analysis
 
