@@ -1,4 +1,4 @@
-name: comigean
+name: comigean-0.038
 channels:
   - bioconda
   - conda-forge
@@ -10,3 +10,8 @@ dependencies:
   - biopython
   - muscle
   - fasttree
+  - pip:
+    - argh
+    - pandas
+    - wget
+    - docopt
