@@ -10,6 +10,3 @@ dependencies:
   - biopython
   - muscle
   - fasttree
-  - pip:
-    - wget
-    - docopt
