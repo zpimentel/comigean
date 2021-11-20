@@ -10,7 +10,7 @@ This package uses conda to download pre-requisities. Therefore, it is required t
 ```
 
 ### 1. Download Required Reference Databases
-Downloads NCBI taxonomy database, NCBI RefSeq genome summaries, and a marker gene database from GtoTree (Lee M, 2019). Just specifiy the name of a directory (that does not yet exist) and these will be downloaded.
+Downloads NCBI taxonomy database, NCBI RefSeq genome summaries, and a marker gene database from GtoTree (Lee M, 2020). Just specifiy the name of a directory (that does not yet exist) and these will be downloaded.
 ```
 >$ comigean install-db <REF_DIR>
 ```
@@ -24,10 +24,15 @@ Required positional arguments include the name of an output directory to put the
 ```
 
 ### 3. Profile Genomes
-This command will produce basic statistics for each genome include genome size, number of contigs, and GC content. This data will be printed to standard out as a table.
+This function will produce basic statistics for each genome including genome size, number of contigs, and GC content. This data will be printed to standard out as a table.
 ```
 >$ comigean genome-stats <OUTDIR> <REF_DIR>
 ```
 
 ### 4. Perform a Phylogenomic Analysis
-
+This function identifies phylogenetic marker genes with HMMER (based on a marker set from Lee M. 2020), extracts the sequences from the proteomes, indiviually aligns each marker, concatenates the alignments, constructs a phylogeny with FastTree, and renames the leaves based on the strain names of each genome.  
+  
+The database directory (REF_DIR) needs to be specified as does the directory with the proteomes for each strain. The proteomes can be found in <OUTDIR>/proteomes.
+```
+>$ comigean find-markers <PROTEOME_DIR> <REF_DIR>
+``` 
