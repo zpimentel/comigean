@@ -3,16 +3,76 @@ Author: Zachary Pimentel
 Institution: University of Rhode Island
 """
 
-# coding density
-# ANI
-# AAI
-# full taxonomy
-
 import os
 import sys
+import subprocess
 
 from Bio import SeqIO
 import pandas as pd
+
+def make_genome_list(genome_dir):
+    ''' Makes list of genomes for FastANI analysis '''
+    dirs = ['reference', 'outgroup', 'user']
+    file_handle = os.path.join(genome_dir, "genome_list.txt")
+    f = open(file_handle, "w")
+
+    for dir in dirs:
+        if os.path.exists(genome_dir + "/" + dir):
+            for filename in os.listdir(genome_dir + "/" + dir):
+                if filename.endswith(".fna"):
+                    genome_handle = os.path.join(genome_dir, dir, filename)
+                    f.write(genome_handle + "\n")
+    f.close()
+
+
+def run_fastani(ref_dir):
+    ''' Run the fastANI command '''
+    log_file = open("logfile", 'a')
+    run_fastani_cmd = subprocess.run([f'fastANI --ql {ref_dir}/genomes/genome_list.txt --rl {ref_dir}/genomes/genome_list.txt -o {ref_dir}/genomes/fast_ani_out.txt'], shell=True,
+                                   stdout=log_file, stderr=subprocess.STDOUT)
+    log_file.close()
+
+
+def plot_fastani(ref_dir, name_dict):
+    ''' Make a heatmap from the fastANI results '''
+    ani_handle = os.path.join(ref_dir, "genomes/fast_ani_out.txt")
+
+    fa_df = pd.read_csv(ani_handle, sep="\t", header=None)
+    fa_df.columns = ['genome1', 'genome2', 'ani', '1', '2']
+
+    fa_df['genome1'] = fa_df['genome1'].str.replace(f'{ref_dir}/genomes/reference/','')
+    fa_df['genome2'] = fa_df['genome2'].str.replace(f'{ref_dir}/genomes/reference/','')
+    fa_df['genome1'] = fa_df['genome1'].str.replace('_genomic.fna','')
+    fa_df['genome2'] = fa_df['genome2'].str.replace('_genomic.fna','')
+
+    fa_df['genome1'] = fa_df.genome1.map(name_dict)
+    fa_df['genome2'] = fa_df.genome2.map(name_dict)
+
+    fa_df = fa_df.pivot(index='genome1', columns='genome2', values='ani')
+    p = fa_df.style.background_gradient(cmap='Blues')
+
+    f=open(f"{ref_dir}/genomes/ANI_heatmap.html","w")
+    f.write(p.render()) # df is the styled dataframe
+    f.close()
+
+
+def rename_heatmap(db_dir):
+    name_dict = {}
+    assembly_file = os.path.join(db_dir, "assembly_summary_refseq.txt")
+    with open(assembly_file) as assem:
+        next(assem)
+        next(assem)
+        for row in assem:
+            row = row.strip().split("\t")
+            accession = row[0]
+            species_name = row[7]
+            strain_info = row[8]
+            assem_id = row[15]
+            full_name = accession + "_" + assem_id
+            full_name = full_name.replace(" ", "_")
+            name_dict[full_name] = species_name + " " + strain_info
+
+    return(name_dict)
 
 
 def genome_stats(genome_dir):
@@ -72,5 +132,11 @@ def profile(db_dir, ref_dir):
 
     df = pd.DataFrame.from_dict(genome_stats_dict, orient='index')
     df.columns = ['Genome Size', '# Contigs', 'GC Content']
+
+    make_genome_list(genome_dir)
+    run_fastani(ref_dir)
+    name_dict = rename_heatmap(db_dir)
+    #print(name_dict)
+    plot_fastani(ref_dir, name_dict)
 
     print(df)

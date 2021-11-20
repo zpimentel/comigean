@@ -10,8 +10,11 @@ dependencies:
   - biopython
   - muscle
   - fasttree
+  - fastani
   - pip:
     - argh
     - pandas
     - wget
     - docopt
+    - Jinja2
+    - matplotlib

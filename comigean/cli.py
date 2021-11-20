@@ -58,8 +58,8 @@ def commands_entry():
                                               args["--code"])
 
     elif args['<command>'] == 'genome-stats':
-        import comigean.get_taxa_db
         import comigean.profile_command
+        import comigean.profile_genomes
 
         args = docopt(comigean.profile_command.__doc__,
                       argv=argv)
