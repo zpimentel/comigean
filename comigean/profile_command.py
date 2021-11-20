@@ -1,6 +1,6 @@
 """
 Usage:
-    comigean genome-stats [--help] [options] <REF_DIR> <OUTDIR>
+    comigean genome-stats [--help] [options] <OUTDIR> <REF_DIR>
 
 Required positional arguments:
     OUTDIR                 Path to a directory to download genomes & proteomes
