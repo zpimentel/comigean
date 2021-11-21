@@ -24,7 +24,7 @@ Required positional arguments include the name of an output directory to put the
 ```
 
 ### Step 3. Profile Genomes
-This function will produce basic statistics for each genome including genome size, number of contigs, and GC content. This data will be printed to standard out as a table.
+This function will produce basic statistics for each genome including genome size, number of contigs, and GC content. This data will be printed to standard out as a table. In addition, fastANI will also be run to compare the average nucleotide identity (ANI) of all of the genomes. A heatmap summarizing the results is produced.
 ```
 >$ comigean genome-stats <OUTDIR> <REF_DIR>
 ```
@@ -32,7 +32,7 @@ This function will produce basic statistics for each genome including genome siz
 ### Step 4. Perform a Phylogenomic Analysis
 This function identifies phylogenetic marker genes with HMMER (based on a marker set from Lee MD, 2019), extracts the sequences from the proteomes, indiviually aligns each marker, concatenates the alignments, constructs a phylogeny with FastTree, and renames the leaves based on the strain names of each genome.  
   
-The database directory (REF_DIR) needs to be specified as does the directory with the proteomes for each strain. The proteomes can be found in <OUTDIR>/proteomes.
+The database directory (REF_DIR) needs to be specified as does the directory with the proteomes for each strain. The proteomes can be found in OUTDIR/proteomes.
 ```
 >$ comigean find-markers <PROTEOME_DIR> <REF_DIR>
 ``` 
