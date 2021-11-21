@@ -2,7 +2,7 @@
 A platform for **co**mparitive **mi**crobial **ge**nome **an**alysis
 
 ### Installation
-This package uses conda to download pre-requisities. Therefore, it is required to install comigean. Clone this git repo and change directory into it.
+This package uses conda to download dependencies. Therefore, it is required to install comigean. Clone this git repo and change directory into it.
 ```
 >$ conda env create -f environment.yml
 >$ conda activate comigean
