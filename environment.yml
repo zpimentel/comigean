@@ -1,4 +1,4 @@
-name: comigean-0.038
+name: comigean
 channels:
   - bioconda
   - conda-forge
