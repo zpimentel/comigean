@@ -147,6 +147,10 @@ class GetGenomesClass:
         gendir = f"{dir}/genomes/{self.group}/"
         mkdir_if_nonexistant(gendir)
 
+        cdsdir = f"{dir}/cds/{self.group}/"
+        mkdir_if_nonexistant(cdsdir)
+
+
         for id in taxa_ids:
             for gen in url_dict[id]:
                 if gen[2] in assem_list and gen[4] in refseq_list:
@@ -156,10 +160,16 @@ class GetGenomesClass:
 
                         gen_url = os.path.join(gen[1], gen[0] + "_" + gen[3] +
                                                "_genomic.fna.gz").replace(" ", "_")
+
+                        cds_url = os.path.join(gen[1], gen[0] + "_" + gen[3] +
+                                               "_cds_from_genomic.fna.gz").replace(" ", "_")
+
                         try:
                             proteome_out = wget.download(proturl, out=protdir,
                                                          bar=None)
                             genome_out = wget.download(gen_url, out=gendir,
+                                                       bar=None)
+                            cds_out = wget.download(cds_url, out=cdsdir,
                                                        bar=None)
                         except IOError:
                             print(f"Download of {gen[0]} failed.")
@@ -169,6 +179,10 @@ class GetGenomesClass:
 
                         gen_file = os.path.join(gendir, gen_url.split('/')[-1])
                         subprocess.run([f"gunzip {gen_file}"], shell=True)
+
+                        cds_file = os.path.join(cdsdir, cds_url.split('/')[-1])
+                        subprocess.run([f"gunzip {cds_file}"], shell=True)
+
                     else:
                         print(f'Unable to download {gen[0]}. Incomplete data provided by RefSeq =(')
 
