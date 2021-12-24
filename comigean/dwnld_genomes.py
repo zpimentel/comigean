@@ -187,9 +187,7 @@ class GetGenomesClass:
                         print(f'Unable to download {gen[0]}. Incomplete data provided by RefSeq =(')
 
         if len(os.listdir(protdir)) == 0:
-            raise Exception("While a valid NCBI taxonomy ID was provided, no \
-                             genomes or proteomes were downloaded. Do you  \
-                             have a stable interent connection?")
+            raise Exception("While a valid NCBI taxonomy ID was provided, no genomes or proteomes were downloaded. Do you have a stable interent connection?")
 
         return(protdir)
 
@@ -210,8 +208,7 @@ class GetGenomesClass:
                 bfna = filename
                 base = os.path.splitext(bfna)[0]
             else:
-                raise Exception("User provided genomes files must end \
-                                 with the extension .fna")
+                raise Exception("User provided genomes files must end with the extension .fna")
 
             gene_call = subprocess.run([f'prodigal \
                                         -i {os.path.join(gen_path, bfna)} \
@@ -237,14 +234,10 @@ def run_group(parent, group_name, name_dict, node_dict, url_dict, rs_list,
         genome_count = count_genomes(ids, url_dict, rs_list, assem_list)
 
         if count:
-            print(f"Number of outgroup genomes from {taxa_id} to be \
-                  downloaded: {genome_count}")
+            print(f"Number of outgroup genomes from {taxa_id} to be downloaded: {genome_count}")
         else:
             if genome_count == 0:
-                raise Exception(f"This taxa ID ({parent}) and options \
-                                selected for --refseq_category and \
-                                --assembly_level has resulted in no genomes \
-                                being downloaded.")
+                raise Exception(f"This taxa ID ({parent}) and options selected for --refseq_category and --assembly_level has resulted in no genomes being downloaded.")
             group.download_sequences(dir, ids, url_dict, rs_list, assem_list)
 
 
